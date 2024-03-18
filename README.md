@@ -3,7 +3,7 @@ Just a fun challenge
 
 Youtube Video: TODO
 
-Play right now: TODO
+[Play right now](http://challenges.infinitecoder.org/regex-snake/)
 
 # Source code
 The source code is in the docs directory (I did this, so GitHub Pages can work).
