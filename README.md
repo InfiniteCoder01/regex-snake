@@ -1,7 +1,7 @@
 # A snake game in RegEx (Yep, regular expressions)
 Just a fun challenge
 
-Youtube Video: TODO
+[Youtube Video](https://www.youtube.com/watch?v=qDx1UE1ME1k)
 
 [Play right now](http://challenges.infinitecoder.org/regex-snake/)
 
