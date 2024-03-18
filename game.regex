@@ -1,0 +1,210 @@
+:width 100
+:height 40
+:space \s
+:apple a
+
+# Snake
+:head ☺
+:body_up Λ
+:body_right >
+:body_down V
+:body_left <
+:start_length 3
+
+# Screens
+:game_over \s.d8888b.\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\n\
+d88P\s\sY88b\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\n\
+888\s\s\s\s888\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\n\
+888\s\s\s\s\s\s\s\s\s8888b.\s\s88888b.d88b.\s\s\s.d88b.\s\n\
+888\s\s88888\s\s\s\s\s"88b\s888\s"888\s"88b\sd8P\s\sY8b\n\
+888\s\s\s\s888\s.d888888\s888\s\s888\s\s888\s88888888\n\
+Y88b\s\sd88P\s888\s\s888\s888\s\s888\s\s888\sY8b.\s\s\s\s\n\
+\s"Y8888P88\s"Y888888\s888\s\s888\s\s888\s\s"Y8888\s\n\
+\n\
+\s.d88888b.\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\n\
+d88P"\s"Y88b\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\n\
+888\s\s\s\s\s888\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\s\n\
+888\s\s\s\s\s888\s888\s\s888\s\s.d88b.\s\s888d888\n\
+888\s\s\s\s\s888\s888\s\s888\sd8P\s\sY8b\s888P"\s\s\n\
+888\s\s\s\s\s888\sY88\s\s88P\s88888888\s888\s\s\s\s\n\
+Y88b.\s.d88P\s\sY8bd8P\s\sY8b.\s\s\s\s\s888\s\s\s\s\n\
+\s"Y88888P"\s\s\s\sY88P\s\s\s\s"Y8888\s\s888\s\s\s\s
+
+# Utility
+:anything [^]*
+:cell [&space&apple&body_up&body_right&body_down&body_left\n]
+:steppable [&space&apple]
+:linebreak &cell{&width}
+:eq/([a-zA-Z_][a-zA-Z0-9_]*) ([^]*)/ $1:$2
+
+# Init
+/^$/
+Score: \s 0\n
+&repeat(&eval(&start_length - 1) &body_right) &head
+&repeat(&eval(&width - &start_length) &space)\n
+&repeat(&eval(&height - 1) &repeat(&width &space)\n)
+--memory\n
+direction: none
+/
+
+# -------- Keyboard
+# Up
+/
+(?<=&anything)
+&eq(direction [a-z]+)\n
+&eq(key w)
+/
+direction: up
+/
+
+# Right
+/
+(?<=&anything)
+&eq(direction [a-z]+)\n
+&eq(key d)
+/
+direction: right
+/
+
+# Down
+/
+(?<=&anything)
+&eq(direction [a-z]+)\n
+&eq(key s)
+/
+direction: down
+/
+
+# Left
+/
+(?<=&anything)
+&eq(direction [a-z]+)\n
+&eq(key a)
+/
+direction: left
+/
+
+# -------- Collisions
+/
+(?! &anything (
+# Up
+&steppable (&linebreak) &head
+&anything &eq(direction up)
+|
+# Right
+&head &steppable
+&anything &eq(direction right)
+|
+# Down
+&head (&linebreak) &steppable
+&anything &eq(direction down)
+|
+# Left
+&steppable &head
+&anything &eq(direction left)
+|
+&eq(direction none)
+))
+^Score:\s([0-9]+)
+&anything
+/
+&game_over\n
+Your\s score\s is\s $4\n
+/
+
+# -------- Movement
+# Up
+/
+&steppable (&linebreak) &head
+(?=&anything &eq(direction up))
+/
+&head $1 &body_up
+/
+
+# Right
+/
+&head &steppable
+(?=&anything &eq(direction right))
+/
+&body_right &head
+/
+
+# Down
+/
+&head (&linebreak) &steppable
+(?=&anything &eq(direction down))
+/
+&body_down $1 &head
+/
+
+# Left
+/
+&steppable &head
+(?=&anything &eq(direction left))
+/
+&head &body_left
+/
+
+# -------- Tail
+/
+(?<=
+[^&body_down][^]{&eval(&width - 1)} [^&body_right]
+|
+^Score:\s[0-9]+\n.{0,&eval(&width - 2)} [^&body_right]
+|
+^Score:\s[0-9]+\n
+)
+
+[&body_up&body_right&body_down&body_left]
+
+(?=
+([^&body_left]|$)
+([^]{&eval(&width - 1)}[^&body_up]|.{0,&eval(&width - 2)}\n--memory)
+(&anything &eq(direction (?!none)))
+)
+(
+(?<=&anything &apple &anything)
+|(?=&anything &apple &anything)
+)
+/&space/
+
+# -------- Score
+# Source: https://stackoverflow.com/questions/12941362/is-it-possible-to-increment-numbers-using-regex-substitution
+/
+([0-9]+)
+(?!&anything &apple)
+(?=&anything &eq(direction (?!none)))
+/0$1~01234567890/
+
+/([0-9])(?=9*~[0-9]*?\1([0-9]))/$2/g
+/\b0(?=[0-9])|~[0-9]*//g
+
+# -------- Apple
+/
+(
+(?<=&head[^]{130}) &space (?=&anything &eq(direction none))
+| (?<=&head[^]{579}) &space (?=&anything &eq(direction up))
+| (?<!:) &space (?=[^]{579}&head) (?=&anything &eq(direction up))
+| (?<=&head[^]{1113}) &space (?=&anything &eq(direction right))
+| (?<!:) &space (?=[^]{1113}&head) (?=&anything &eq(direction right))
+| (?<=&head[^]{1650}) &space (?=&anything &eq(direction down))
+| (?<!:) &space (?=[^]{1650}&head) (?=&anything &eq(direction down))
+| (?<=&head[^]{263}) &space (?=&anything &eq(direction left))
+| (?<!:) &space (?=[^]{263}&head) (?=&anything &eq(direction left))
+)
+(?<!&anything &apple &anything)
+(?!&anything &apple &anything)
+/
+&apple
+/
+
+/
+(
+(?<=&head[^]{0,3000}) &space
+| (?<!:) &space (?=[^]{0,3000}&head)
+)
+(?<!&anything &apple &anything)
+(?!&anything &apple &anything)
+/
+&apple
+/
