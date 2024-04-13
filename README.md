@@ -3,7 +3,7 @@ Just a fun challenge
 
 [Youtube Video](https://www.youtube.com/watch?v=qDx1UE1ME1k)
 
-[Play it right now](http://challenges.infinitecoder.org/regex-snake/)
+[Play it right now](https://www.infinitecoder.org/regex-snake/)
 
 # Source code
 The source code is in the docs directory (I did this, so GitHub Pages can work).
